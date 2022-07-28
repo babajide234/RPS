@@ -12,8 +12,9 @@ const handToInt = {'ROCK': 0, 'PAPER': 1, 'SCISSORS': 2};
 const intToOutcome = ['Bob wins!', 'Draw!', 'Alice wins!'];
 const {standardUnit} = reach;
 const defaults = {defaultFundAmt: '10', defaultWager: '3', standardUnit};
-reach.setProviderByName('LocalHost');
-// reach.setWalletFallback(reach.walletFallback({providerEnv: 'TestNet', MyAlgoConnect }));
+// reach.setProviderByName('TestNet');
+// reach.setWalletFallback(reach.walletFallback({}));
+reach.setWalletFallback(reach.walletFallback({providerEnv: 'TestNet', MyAlgoConnect }));
 class App extends React.Component {
     constructor(props) {
         super(props);
@@ -21,8 +22,11 @@ class App extends React.Component {
     }
     async componentDidMount() {
         const acc = await reach.getDefaultAccount();
+        console.log('Account',acc);
         const balAtomic = await reach.balanceOf(acc);
+        console.log('bal',balAtomic);
         const bal = reach.formatCurrency(balAtomic, 4);
+        console.log('bal',bal);
         this.setState({acc, bal});
         if (await reach.canFundFromFaucet()) {
         this.setState({view: 'FundAccount'});
@@ -62,11 +66,13 @@ class Deployer extends Player {
   setWager(wager) { this.setState({view: 'Deploy', wager}); }
   async deploy() {
     const ctc = this.props.acc.contract(backend);
+    console.log('deploy contract', ctc);
     this.setState({view: 'Deploying', ctc});
     this.wager = reach.parseCurrency(this.state.wager); // UInt
     this.deadline = {ETH: 10, ALGO: 100, CFX: 1000}[reach.connector]; // UInt
     backend.Alice(ctc, this);
     const ctcInfoStr = JSON.stringify(await ctc.getInfo(), null, 2);
+    console.log('deploy string', ctcInfoStr);
     this.setState({view: 'WaitingForAttacher', ctcInfoStr});
   }
   render() { return renderView(this, DeployerViews); }
